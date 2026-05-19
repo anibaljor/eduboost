@@ -1,0 +1,6 @@
+{
+  "name": "EduBoost AI",
+  "description": "Una plataforma integral para estudiantes con tutoría IA, generador de quizzes y seguimiento de progreso personalizado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

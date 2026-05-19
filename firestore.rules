@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.email is string;
+    }
+
+    function isValidHistory(data) {
+      return data.userId == request.auth.uid &&
+             data.prompt is string &&
+             data.response is string &&
+             data.timestamp == request.time;
+    }
+
+    function isValidQuiz(data) {
+      return data.userId == request.auth.uid &&
+             data.title is string &&
+             data.questions is list &&
+             data.timestamp == request.time;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && 
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'grade', 'geminiApiKey']);
+      allow delete: if isOwner(userId);
+
+      // History subcollection
+      match /history/{historyId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidHistory(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      // Quizzes subcollection
+      match /quizzes/{quizId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidQuiz(request.resource.data);
+        allow update: if isOwner(userId) && 
+                         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'completed']);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
