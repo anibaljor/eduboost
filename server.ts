@@ -8,6 +8,7 @@ dotenv.config();
 
 const app = express();
 const PORT = 3000;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 app.use(express.json());
 
@@ -18,7 +19,7 @@ function getDefaultAi() {
   if (!defaultAi) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not defined in the environment.");
+      throw new Error("NO_API_KEY");
     }
     defaultAi = new GoogleGenAI({ 
       apiKey,
@@ -63,7 +64,28 @@ const handleGeminiError = (error: any, res: any) => {
   
   const errStr = JSON.stringify(error).toLowerCase();
   const msgStr = (error?.message || "").toLowerCase();
-  
+
+  // No API key configured
+  if (msgStr.includes("no_api_key")) {
+    return res.status(401).json({
+      error: "No hay una API key de Gemini configurada. Agregá tu clave en Ajustes o contactá al administrador."
+    });
+  }
+
+  // Invalid API key (401)
+  if (
+    error?.status === 401 ||
+    error?.code === 401 ||
+    errStr.includes("api_key_invalid") ||
+    errStr.includes("invalid api key") ||
+    errStr.includes("api key not valid") ||
+    msgStr.includes("invalid") && msgStr.includes("key")
+  ) {
+    return res.status(401).json({
+      error: "La API key de Gemini es inválida. Verificá que sea correcta en Ajustes."
+    });
+  }
+
   // Detect Quota/Rate Limit
   if (
     error?.status === 429 || 
@@ -101,7 +123,7 @@ app.post("/api/chat", async (req, res) => {
     const contents = history ? [...history, { role: "user", parts: [{ text: message }] }] : [{ role: "user", parts: [{ text: message }] }];
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_MODEL,
       contents,
       config: {
         systemInstruction: `Eres un tutor experto para estudiantes de ${grade}. Tu objetivo es ayudar con la materia de ${subject}. Explica de forma clara, usa ejemplos y fomenta el pensamiento crítico. No des solo la respuesta, guía al estudiante. 
@@ -124,7 +146,7 @@ app.post("/api/generate-quiz", async (req, res) => {
     const ai = await getGeminiClient(req);
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_MODEL,
       contents: `Genera un quiz de ${topic} para un estudiante de ${grade}. Dificultad: ${difficulty}. Cantidad de preguntas: ${questionCount}.`,
       config: {
         responseMimeType: "application/json",
@@ -166,7 +188,7 @@ app.post("/api/analyze-progress", async (req, res) => {
     const ai = await getGeminiClient(req);
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_MODEL,
       contents: `Analiza el progreso del estudiante basado en este historial de consultas: ${JSON.stringify(history)} y estas calificaciones: ${JSON.stringify(grades)}. 
       Genera un reporte resumido con:
       1. Fortalezas.

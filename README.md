@@ -44,17 +44,20 @@ Copiá `.env.example` a `.env` y completá los valores:
 cp .env.example .env
 ```
 
-| Variable | Descripción |
-|---|---|
-| `GEMINI_API_KEY` | API Key de Google AI Studio (servidor) |
-| `APP_URL` | URL de la app (`http://localhost:3000` en local) |
-| `VITE_FIREBASE_API_KEY` | API Key de Firebase |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Auth domain del proyecto Firebase |
-| `VITE_FIREBASE_PROJECT_ID` | ID del proyecto Firebase |
-| `VITE_FIREBASE_STORAGE_BUCKET` | Storage bucket |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sender ID |
-| `VITE_FIREBASE_APP_ID` | App ID |
-| `VITE_FIREBASE_DATABASE_ID` | ID de la base de datos Firestore (vacío = default) |
+| Variable | Descripción | Requerida |
+|---|---|---|
+| `GEMINI_API_KEY` | API Key de Google AI Studio — clave por defecto del servidor | Sí |
+| `GEMINI_MODEL` | Modelo de Gemini a usar (default: `gemini-2.5-flash`) | No |
+| `APP_URL` | URL de la app (`http://localhost:3000` en local) | No |
+| `VITE_FIREBASE_API_KEY` | API Key de Firebase | Sí |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Auth domain del proyecto Firebase | Sí |
+| `VITE_FIREBASE_PROJECT_ID` | ID del proyecto Firebase | Sí |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Storage bucket | Sí |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Sender ID | Sí |
+| `VITE_FIREBASE_APP_ID` | App ID | Sí |
+| `VITE_FIREBASE_DATABASE_ID` | ID de la base de datos Firestore (vacío = default) | No |
+
+> **Nota sobre la API key de Gemini:** El servidor usa `GEMINI_API_KEY` como clave por defecto. Cada usuario puede configurar su propia clave en Ajustes, que tiene prioridad sobre la del servidor. Si no se configura `GEMINI_API_KEY`, los usuarios deben tener su propia clave en Ajustes para poder usar la IA.
 
 ### Correr el servidor
 
@@ -129,7 +132,16 @@ git push -u origin main
 
 ### 3. Variables de entorno en Vercel
 
-En el panel de Vercel → Settings → **Environment Variables**, agregar todas las variables del `.env` excepto `APP_URL` (esa la configurás después).
+En el panel de Vercel → Settings → **Environment Variables**, agregar:
+
+| Variable | Valor |
+|---|---|
+| `GEMINI_API_KEY` | Tu API key de Google AI Studio |
+| `GEMINI_MODEL` | `gemini-2.5-flash` |
+| `VITE_FIREBASE_*` | Todos los valores de Firebase |
+| `VITE_FIREBASE_DATABASE_ID` | ID de tu base de datos Firestore |
+
+> Las variables con prefijo `VITE_` se incorporan al frontend en tiempo de build. Deben estar cargadas en Vercel **antes** del deploy.
 
 ### 4. Deploy y URL final
 
