@@ -101,7 +101,7 @@ app.post("/api/chat", async (req, res) => {
     const contents = history ? [...history, { role: "user", parts: [{ text: message }] }] : [{ role: "user", parts: [{ text: message }] }];
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents,
       config: {
         systemInstruction: `Eres un tutor experto para estudiantes de ${grade}. Tu objetivo es ayudar con la materia de ${subject}. Explica de forma clara, usa ejemplos y fomenta el pensamiento crítico. No des solo la respuesta, guía al estudiante. 
@@ -124,7 +124,7 @@ app.post("/api/generate-quiz", async (req, res) => {
     const ai = await getGeminiClient(req);
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: `Genera un quiz de ${topic} para un estudiante de ${grade}. Dificultad: ${difficulty}. Cantidad de preguntas: ${questionCount}.`,
       config: {
         responseMimeType: "application/json",
@@ -166,7 +166,7 @@ app.post("/api/analyze-progress", async (req, res) => {
     const ai = await getGeminiClient(req);
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-2.5-flash",
       contents: `Analiza el progreso del estudiante basado en este historial de consultas: ${JSON.stringify(history)} y estas calificaciones: ${JSON.stringify(grades)}. 
       Genera un reporte resumido con:
       1. Fortalezas.

@@ -91,8 +91,13 @@ export default function StatsPage() {
           grades: quizzes.map(q => ({ subject: q.topic, score: q.score }))
         }),
       });
-      const data = await res.json();
-      
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Error del servidor. Verificá que la API key de Gemini sea válida en Ajustes.');
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Error al generar el reporte de progreso');
       }

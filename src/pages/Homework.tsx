@@ -60,8 +60,13 @@ export default function Homework() {
         }),
       });
 
-      const data = await res.json();
-      
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Error del servidor. Verificá que la API key de Gemini sea válida en Ajustes.');
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Error al procesar la consulta');
       }
